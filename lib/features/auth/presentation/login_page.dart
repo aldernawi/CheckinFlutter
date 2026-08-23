@@ -1,4 +1,3 @@
-import 'package:checkin_flutter/core/network/auth_session_manager.dart';
 import 'package:checkin_flutter/core/services/device_identity_service.dart';
 import 'package:checkin_flutter/core/widgets/app_logo.dart';
 import 'package:checkin_flutter/features/auth/login_provider.dart';
@@ -137,7 +136,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 child: ElevatedButton(
                   onPressed: state.status == LoginStateStatus.loading
                       ? null
-                      : () => _handleLogin(context),
+                      : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFDC2626),
                     foregroundColor: Colors.white,
@@ -274,9 +273,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  Future<void> _handleLogin(BuildContext context) async {
+  Future<void> _handleLogin() async {
     final device = await ref.read(deviceIdentityServiceProvider).getIdentity();
-    final success = await ref
+    await ref
         .read(loginProvider.notifier)
         .login(
           deviceId: device.id,
@@ -284,16 +283,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           deviceType: device.type,
         );
 
-    if (success && context.mounted) {
-      final session = ref.read(authSessionProvider);
-      switch (session.roleSet) {
-        case AppUserRoleSet.manager:
-          context.go('/manager/home');
-        case AppUserRoleSet.fieldRep:
-          context.go('/field/home');
-        case AppUserRoleSet.employee:
-          context.go('/main/home');
-      }
-    }
+    // The router listens to the session and redirects authenticated users to
+    // their role-specific home page. Do not navigate with this page's context
+    // after the session changes.
   }
 }

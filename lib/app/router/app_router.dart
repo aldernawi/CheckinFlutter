@@ -39,21 +39,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final session = ref.watch(authSessionProvider);
+  // Keep one router instance for the lifetime of the app. Recreating the
+  // router when login changes the session can leave the login page holding a
+  // stale navigation context.
+  final session = ValueNotifier(ref.read(authSessionProvider));
+  ref.listen<AuthSessionState>(authSessionProvider, (_, next) {
+    session.value = next;
+  });
+  ref.onDispose(session.dispose);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: session,
     redirect: (context, state) {
-      final isAuthRoute = state.fullPath == '/login' ||
+      final currentSession = session.value;
+      final isAuthRoute =
+          state.fullPath == '/login' ||
           state.fullPath == '/forgot-password' ||
           state.fullPath == '/register';
 
-      if (!session.isAuthenticated) {
+      if (!currentSession.isAuthenticated) {
         return isAuthRoute ? null : '/login';
       }
 
       if (isAuthRoute) {
-        switch (session.roleSet) {
+        switch (currentSession.roleSet) {
           case AppUserRoleSet.manager:
             return '/manager/home';
           case AppUserRoleSet.fieldRep:
@@ -64,17 +74,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       }
 
       if (state.fullPath?.startsWith('/manager') == true &&
-          !RouteGuards.canAccessManagerRoutes(session.roleSet)) {
+          !RouteGuards.canAccessManagerRoutes(currentSession.roleSet)) {
         return '/main/home';
       }
 
       if (state.fullPath?.startsWith('/field') == true &&
-          !RouteGuards.canAccessFieldRoutes(session.roleSet)) {
+          !RouteGuards.canAccessFieldRoutes(currentSession.roleSet)) {
         return '/main/home';
       }
 
       if (state.fullPath == '/') {
-        switch (session.roleSet) {
+        switch (currentSession.roleSet) {
           case AppUserRoleSet.manager:
             return '/manager/home';
           case AppUserRoleSet.fieldRep:
@@ -309,9 +319,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/team/:memberId',
         name: RouteNames.teamMemberDetails,
-        builder: (context, state) => TeamMemberDetailsPage(
-          memberId: state.pathParameters['memberId']!,
-        ),
+        builder: (context, state) =>
+            TeamMemberDetailsPage(memberId: state.pathParameters['memberId']!),
       ),
       GoRoute(
         path: '/calendar',
