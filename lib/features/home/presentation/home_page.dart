@@ -1,4 +1,5 @@
 import 'package:checkin_flutter/features/home/home_provider.dart';
+import 'package:checkin_flutter/core/services/device_identity_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -178,7 +179,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      state.isWithinRange ? Icons.check : Icons.location_searching,
+                      state.isWithinRange
+                          ? Icons.check
+                          : Icons.location_searching,
                       color: Colors.white,
                       size: 24,
                     ),
@@ -242,22 +245,22 @@ class _HomePageState extends ConsumerState<HomePage> {
     final buttonText = state.isCheckedIn && !state.isCheckedOut
         ? 'تسجيل الانصراف'
         : state.isCheckedIn && state.isCheckedOut
-            ? 'تم تسجيل الانصراف'
-            : 'تسجيل الحضور';
+        ? 'تم تسجيل الانصراف'
+        : 'تسجيل الحضور';
 
     final buttonColor = state.isCheckedIn && !state.isCheckedOut
         ? const Color(0xFFEF4444)
         : state.isCheckedIn && state.isCheckedOut
-            ? const Color(0xFF9CA3AF)
-            : const Color(0xFF10B981);
+        ? const Color(0xFF9CA3AF)
+        : const Color(0xFF10B981);
 
     final buttonEnabled = !state.isCheckedOut && !state.isActionLoading;
 
     final statusText = state.isCheckedIn && state.isCheckedOut
         ? 'تم تسجيل الحضور والانصراف'
         : state.isCheckedIn
-            ? 'تم تسجيل الحضور'
-            : 'لم يتم تسجيل الحضور بعد';
+        ? 'تم تسجيل الحضور'
+        : 'لم يتم تسجيل الحضور بعد';
 
     return Card(
       elevation: 3,
@@ -353,7 +356,9 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: _buildStatCard(
             state.isCheckedOut ? 'وقت الانصراف' : 'بانتظار الانصراف',
             state.checkOutTime ?? '--:--',
-            state.isCheckedOut ? const Color(0xFFEF4444) : const Color(0xFF9CA3AF),
+            state.isCheckedOut
+                ? const Color(0xFFEF4444)
+                : const Color(0xFF9CA3AF),
           ),
         ),
       ],
@@ -389,11 +394,14 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _performAttendanceAction() async {
-    await ref.read(homeProvider.notifier).performAttendanceAction(
+    final device = await ref.read(deviceIdentityServiceProvider).getIdentity();
+    await ref
+        .read(homeProvider.notifier)
+        .performAttendanceAction(
           latitude: 32.8872,
           longitude: 13.1913,
           accuracy: 10.0,
-          deviceId: 'flutter-device-id',
+          deviceId: device.id,
         );
   }
 }

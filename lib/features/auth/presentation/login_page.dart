@@ -1,4 +1,5 @@
 import 'package:checkin_flutter/core/network/auth_session_manager.dart';
+import 'package:checkin_flutter/core/services/device_identity_service.dart';
 import 'package:checkin_flutter/core/widgets/app_logo.dart';
 import 'package:checkin_flutter/features/auth/login_provider.dart';
 import 'package:flutter/material.dart';
@@ -42,18 +43,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 'Checkin',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      color: const Color(0xFFDC2626),
-                      fontWeight: FontWeight.w800,
-                      fontSize: 42,
-                    ),
+                  color: const Color(0xFFDC2626),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 42,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'نظام الحضور والانصراف',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF6B7280),
-                    ),
+                  color: const Color(0xFF6B7280),
+                ),
               ),
               const SizedBox(height: 48),
               Text(
@@ -64,8 +65,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               Text(
                 'سجل دخولك للمتابعة',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFF6B7280),
-                    ),
+                  color: const Color(0xFF6B7280),
+                ),
               ),
               const SizedBox(height: 24),
               _buildLabel('رقم الهاتف'),
@@ -74,7 +75,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 hint: '09XXXXXXXX',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
-                onChanged: (v) => ref.read(loginProvider.notifier).updatePhone(v),
+                onChanged: (v) =>
+                    ref.read(loginProvider.notifier).updatePhone(v),
               ),
               const SizedBox(height: 16),
               _buildLabel('كلمة المرور'),
@@ -89,10 +91,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
                   ),
-                  onPressed: () =>
-                      ref.read(loginProvider.notifier).togglePasswordVisibility(),
+                  onPressed: () => ref
+                      .read(loginProvider.notifier)
+                      .togglePasswordVisibility(),
                 ),
-                onChanged: (v) => ref.read(loginProvider.notifier).updatePassword(v),
+                onChanged: (v) =>
+                    ref.read(loginProvider.notifier).updatePassword(v),
               ),
               if (state.status == LoginStateStatus.error) ...[
                 const SizedBox(height: 12),
@@ -106,7 +110,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   child: Text(
                     state.errorMessage ?? '',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                    style: const TextStyle(
+                      color: Color(0xFFEF4444),
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -149,7 +156,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         )
                       : const Text(
                           'تسجيل الدخول',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                 ),
               ),
@@ -265,9 +275,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _handleLogin(BuildContext context) async {
-    final success = await ref.read(loginProvider.notifier).login(
-          deviceId: 'flutter-device-id',
-          deviceName: 'Flutter Device',
+    final device = await ref.read(deviceIdentityServiceProvider).getIdentity();
+    final success = await ref
+        .read(loginProvider.notifier)
+        .login(
+          deviceId: device.id,
+          deviceName: device.name,
+          deviceType: device.type,
         );
 
     if (success && context.mounted) {
@@ -283,4 +297,3 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 }
-

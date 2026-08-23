@@ -48,7 +48,7 @@ jobs:
 
       - name: Build APK
         working-directory: Checkin.Flutter
-        run: flutter build apk --release
+        run: flutter build apk --release --dart-define=FLAVOR=prod
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -75,7 +75,7 @@ jobs:
 
       - name: Build iOS
         working-directory: Checkin.Flutter
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign --dart-define=FLAVOR=prod
 
       - name: Upload iOS build
         uses: actions/upload-artifact@v4

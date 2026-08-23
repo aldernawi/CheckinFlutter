@@ -36,7 +36,8 @@ class LoginState {
 }
 
 class LoginNotifier extends StateNotifier<LoginState> {
-  LoginNotifier(this._repository) : super(const LoginState(status: LoginStateStatus.idle));
+  LoginNotifier(this._repository)
+    : super(const LoginState(status: LoginStateStatus.idle));
 
   final AuthRepository _repository;
 
@@ -57,7 +58,11 @@ class LoginNotifier extends StateNotifier<LoginState> {
       state.password.isNotEmpty &&
       state.status != LoginStateStatus.loading;
 
-  Future<bool> login({required String deviceId, String? deviceName}) async {
+  Future<bool> login({
+    required String deviceId,
+    String? deviceName,
+    required String deviceType,
+  }) async {
     if (!canLogin) return false;
 
     state = state.copyWith(status: LoginStateStatus.loading);
@@ -67,6 +72,7 @@ class LoginNotifier extends StateNotifier<LoginState> {
       password: state.password,
       deviceId: deviceId,
       deviceName: deviceName,
+      deviceType: deviceType,
     );
 
     if (result.success) {
