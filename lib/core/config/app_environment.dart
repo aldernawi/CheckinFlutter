@@ -4,7 +4,9 @@ class AppEnvironment {
   const AppEnvironment._();
 
   static AppFlavor get flavor {
-    const value = String.fromEnvironment('FLAVOR', defaultValue: 'dev');
+    // A release build must never silently target the emulator-only dev URL.
+    // Developers can still opt into dev or staging with --dart-define=FLAVOR=...
+    const value = String.fromEnvironment('FLAVOR', defaultValue: 'prod');
     switch (value) {
       case 'prod':
         return AppFlavor.prod;
