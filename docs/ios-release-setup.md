@@ -3,6 +3,9 @@
 This project is ready for an Xcode/macOS validation pass, but signing and Apple
 account resources must be configured on a Mac.
 
+The app minimum is iOS 14.0 because its maps and background-work dependencies
+require it.
+
 1. Open `ios/Runner.xcworkspace` in Xcode and set the final Apple Team,
    provisioning profile, and production bundle identifier.
 2. `ios/Flutter/Secrets.xcconfig` provides `GOOGLE_MAPS_API_KEY` locally and
