@@ -1,6 +1,8 @@
 import 'package:checkin_flutter/app/router/route_guards.dart';
 import 'package:checkin_flutter/app/router/route_names.dart';
 import 'package:checkin_flutter/core/network/auth_session_manager.dart';
+import 'package:checkin_flutter/core/models/history_models.dart';
+import 'package:checkin_flutter/core/models/team_models.dart';
 import 'package:checkin_flutter/features/attendance/presentation/check_in_page.dart';
 import 'package:checkin_flutter/features/attendance/presentation/check_out_page.dart';
 import 'package:checkin_flutter/features/auth/presentation/forgot_password_page.dart';
@@ -51,6 +53,34 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     refreshListenable: session,
+    errorBuilder: (context, state) => Scaffold(
+      appBar: AppBar(title: const Text('تعذر فتح الصفحة')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.route_outlined, size: 56),
+              const SizedBox(height: 12),
+              const Text(
+                'الرابط المطلوب غير متاح.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => context.go(
+                  session.value.isAuthenticated
+                      ? homeRouteForRole(session.value.roleSet)
+                      : '/login',
+                ),
+                child: const Text('العودة للرئيسية'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
     redirect: (context, state) {
       final currentSession = session.value;
       final isAuthRoute =
@@ -97,6 +127,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      // iOS may restore the application at `/` after it has been backgrounded.
+      // Keep this location registered even though the global redirect normally
+      // forwards it immediately to the role-specific home screen.
+      GoRoute(path: '/', builder: (context, state) => const SizedBox.shrink()),
       GoRoute(
         path: '/login',
         name: RouteNames.login,
@@ -274,6 +308,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: RouteNames.attendanceDetails,
         builder: (context, state) => AttendanceDetailsPage(
           attendanceId: state.pathParameters['attendanceId']!,
+          initialRecord: state.extra is AttendanceRecordDto
+              ? state.extra! as AttendanceRecordDto
+              : null,
         ),
       ),
       GoRoute(
@@ -319,8 +356,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/team/:memberId',
         name: RouteNames.teamMemberDetails,
-        builder: (context, state) =>
-            TeamMemberDetailsPage(memberId: state.pathParameters['memberId']!),
+        builder: (context, state) => TeamMemberDetailsPage(
+          memberId: state.pathParameters['memberId']!,
+          initialMember: state.extra is TeamMemberAttendanceDto
+              ? state.extra! as TeamMemberAttendanceDto
+              : null,
+        ),
       ),
       GoRoute(
         path: '/calendar',

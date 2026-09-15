@@ -32,7 +32,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.go('/new-request'),
+            onPressed: () => context.push('/new-request'),
           ),
         ],
       ),
@@ -45,7 +45,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFDC2626),
         foregroundColor: Colors.white,
-        onPressed: () => context.go('/new-request'),
+        onPressed: () => context.push('/new-request'),
         child: const Icon(Icons.add),
       ),
     );
@@ -121,7 +121,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
             const Text('لا توجد طلبات', style: TextStyle(color: Color(0xFF6B7280))),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () => context.go('/new-request'),
+              onPressed: () => context.push('/new-request'),
               child: const Text('إنشاء طلب جديد'),
             ),
           ],
@@ -149,7 +149,7 @@ class _RequestsPageState extends ConsumerState<RequestsPage> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => context.go('/request/${request.id}'),
+        onTap: () => context.push('/request/${request.id}'),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

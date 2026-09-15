@@ -5,6 +5,7 @@ import 'package:checkin_flutter/core/network/api_client.dart';
 import 'package:checkin_flutter/core/network/api_routes.dart';
 import 'package:checkin_flutter/core/network/auth_session_manager.dart';
 import 'package:checkin_flutter/core/storage/secure_storage_service.dart';
+import 'package:checkin_flutter/core/storage/employee_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AuthRepository {
@@ -44,7 +45,7 @@ class AuthRepository {
       );
       await _storage.write(
         StorageKeys.employeeData,
-        data.employee.toJson().toString(),
+        encodeEmployeeCache(data.employee),
       );
       await _apiClient.post<bool>(
         ApiRoutes.registerDevice,

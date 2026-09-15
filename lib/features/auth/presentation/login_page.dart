@@ -190,7 +190,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextButton(
-                    onPressed: () => context.go('/privacy-policy'),
+                    onPressed: () => context.push('/privacy-policy'),
                     child: const Text(
                       'سياسة الخصوصية',
                       style: TextStyle(
@@ -201,7 +201,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const Text('و'),
                   TextButton(
-                    onPressed: () => context.go('/terms-of-service'),
+                    onPressed: () => context.push('/terms-of-service'),
                     child: const Text(
                       'شروط الاستخدام',
                       style: TextStyle(

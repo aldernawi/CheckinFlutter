@@ -70,7 +70,9 @@ class _AddStorePageState extends ConsumerState<AddStorePage> {
                       builder: (_) => MapPickerPage(initialLat: _lat, initialLng: _lng),
                     ),
                   );
-                  if (result != null) setState(() {_lat = result['lat'] as double; _lng = result['lng'] as double;});
+                  if (result != null) {
+                    setState(() {_lat = result['lat'] as double; _lng = result['lng'] as double;});
+                  }
                 },
               ),
             ),

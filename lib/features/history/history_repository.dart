@@ -15,15 +15,16 @@ class HistoryRepository {
     DateTime? fromDate,
     DateTime? toDate,
   }) {
-    final params = <String, dynamic>{'page': page, 'pageSize': pageSize};
-    if (fromDate != null) {
-      params['startDate'] =
-          '${fromDate.year}-${fromDate.month.toString().padLeft(2, '0')}-${fromDate.day.toString().padLeft(2, '0')}';
-    }
-    if (toDate != null) {
-      params['endDate'] =
-          '${toDate.year}-${toDate.month.toString().padLeft(2, '0')}-${toDate.day.toString().padLeft(2, '0')}';
-    }
+    // The official API requires both dates. MAUI defaults to the recent
+    // attendance window, so never send the endpoint an incomplete contract.
+    final end = toDate ?? DateTime.now();
+    final start = fromDate ?? end.subtract(const Duration(days: 30));
+    final params = <String, dynamic>{
+      'page': page,
+      'pageSize': pageSize,
+      'startDate': _date(start),
+      'endDate': _date(end),
+    };
 
     return _apiClient.get<AttendanceHistoryResponse>(
       ApiRoutes.attendanceHistory,
@@ -33,6 +34,9 @@ class HistoryRepository {
           : null,
     );
   }
+
+  String _date(DateTime value) =>
+      '${value.year}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 }
 
 final historyRepositoryProvider = Provider<HistoryRepository>(

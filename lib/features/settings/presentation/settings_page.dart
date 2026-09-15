@@ -35,18 +35,18 @@ class SettingsPage extends StatelessWidget {
               _buildItem(
                 icon: Icons.privacy_tip_outlined,
                 title: 'سياسة الخصوصية',
-                onTap: () => context.go('/privacy-policy'),
+                onTap: () => context.push('/privacy-policy'),
               ),
               _buildItem(
                 icon: Icons.description_outlined,
                 title: 'شروط الاستخدام',
-                onTap: () => context.go('/terms-of-service'),
+                onTap: () => context.push('/terms-of-service'),
               ),
               _buildItem(
                 icon: Icons.delete_outline,
                 title: 'حذف الحساب',
                 titleColor: const Color(0xFFEF4444),
-                onTap: () => context.go('/delete-account'),
+                onTap: () => context.push('/delete-account'),
               ),
             ],
           ),

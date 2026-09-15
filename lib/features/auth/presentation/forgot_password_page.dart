@@ -101,6 +101,8 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     if (_phoneController.text.trim().isEmpty) return;
     setState(() => _isLoading = true);
     final result = await ref.read(authRepositoryProvider).forgotPassword(_phoneController.text);
-    if (mounted) setState(() {_isLoading = false; _success = result.success;});
+    if (mounted) {
+      setState(() {_isLoading = false; _success = result.success;});
+    }
   }
 }

@@ -132,7 +132,7 @@ class _StoreDetailsPageState extends ConsumerState<StoreDetailsPage> {
                       ),
                     ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/record-visit/${widget.storeId}'),
+        onPressed: () => context.push('/record-visit/${widget.storeId}'),
         backgroundColor: const Color(0xFF10B981),
         icon: const Icon(Icons.check_circle, color: Colors.white),
         label: const Text('تسجيل زيارة', style: TextStyle(color: Colors.white)),

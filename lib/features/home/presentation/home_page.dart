@@ -1,4 +1,5 @@
 import 'package:checkin_flutter/features/home/home_provider.dart';
+import 'package:checkin_flutter/features/profile/profile_provider.dart';
 import 'package:checkin_flutter/core/services/device_identity_service.dart';
 import 'package:checkin_flutter/core/services/location_service.dart';
 import 'package:flutter/material.dart';
@@ -17,12 +18,17 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(homeProvider.notifier).initialize();
+      ref.read(profileProvider.notifier).loadProfile();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(homeProvider);
+    final employee = ref.watch(profileProvider).employee;
+    final profileName = employee?.fullNameAr?.trim().isNotEmpty == true
+        ? employee!.fullNameAr!
+        : employee?.fullName;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -31,7 +37,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         onRefresh: () => ref.read(homeProvider.notifier).refresh(),
         child: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(child: _buildHeader(state)),
+            SliverToBoxAdapter(
+              child: _buildHeader(state, profileName: profileName),
+            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -55,7 +63,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _buildHeader(HomeState state) {
+  Widget _buildHeader(HomeState state, {String? profileName}) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 50, 24, 30),
       decoration: const BoxDecoration(
@@ -77,7 +85,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           const SizedBox(height: 4),
           Text(
-            state.employeeName.isEmpty ? 'الموظف' : state.employeeName,
+            profileName?.trim().isNotEmpty == true
+                ? profileName!
+                : state.employeeName.isEmpty
+                ? 'الموظف'
+                : state.employeeName,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,

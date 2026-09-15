@@ -91,7 +91,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                                   decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                                   child: Text(statusText, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
                                 ),
-                                onTap: () => context.go('/attendance/$index'),
+                                onTap: () => context.push('/attendance/${r.id}', extra: r),
                               ),
                             );
                           },

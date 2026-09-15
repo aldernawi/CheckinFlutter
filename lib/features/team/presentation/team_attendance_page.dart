@@ -93,7 +93,7 @@ class _TeamAttendancePageState extends ConsumerState<TeamAttendancePage> {
                   ),
                 ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/pending-requests'),
+        onPressed: () => context.push('/pending-requests'),
         backgroundColor: const Color(0xFFDC2626),
         child: const Icon(Icons.pending_actions, color: Colors.white),
       ),
@@ -183,7 +183,7 @@ class _TeamAttendancePageState extends ConsumerState<TeamAttendancePage> {
             if (m.lateMinutes > 0) Text('+${m.lateMinutes} د', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 11)),
           ],
         ),
-        onTap: () => context.go('/team/${m.employeeId}'),
+        onTap: () => context.push('/team/${m.employeeId}', extra: m),
       ),
     );
   }

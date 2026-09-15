@@ -11,10 +11,31 @@ class EditProfilePage extends ConsumerStatefulWidget {
 }
 
 class _EditProfilePageState extends ConsumerState<EditProfilePage> {
-  final _nameController = TextEditingController(text: 'أحمد محمد');
-  final _phoneController = TextEditingController(text: '0912345678');
-  final _emailController = TextEditingController(text: 'ahmed@example.com');
-  bool _isLoading = false;
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  Future<void> _load() async {
+    await ref.read(profileProvider.notifier).loadProfile();
+    if (!mounted) return;
+    final employee = ref.read(profileProvider).employee;
+    if (employee != null) {
+      _nameController.text = employee.fullNameAr?.trim().isNotEmpty == true
+          ? employee.fullNameAr!
+          : employee.fullName;
+      _phoneController.text = employee.phone;
+      _emailController.text = employee.email ?? '';
+    }
+    setState(() => _isLoading = false);
+  }
 
   @override
   void dispose() {
@@ -26,87 +47,139 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(profileProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('تعديل الملف الشخصي')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Stack(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : state.employee == null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      state.errorMessage ?? 'تعذر تحميل بيانات الحساب',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: () {
+                        setState(() => _isLoading = true);
+                        _load();
+                      },
+                      child: const Text('إعادة المحاولة'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(24),
                 children: [
-                  const CircleAvatar(radius: 50, backgroundColor: Color(0xFFDC2626), child: Icon(Icons.person, size: 50, color: Colors.white)),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(color: Color(0xFFDC2626), shape: BoxShape.circle),
-                      child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                  const CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Color(0xFFDC2626),
+                    child: Icon(Icons.person, size: 50, color: Colors.white),
+                  ),
+                  const SizedBox(height: 24),
+                  _field(
+                    _nameController,
+                    'الاسم الكامل',
+                    Icons.person_outline,
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'الاسم مطلوب'
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  _field(
+                    _phoneController,
+                    'رقم الهاتف',
+                    Icons.phone_outlined,
+                    keyboardType: TextInputType.phone,
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'رقم الهاتف مطلوب'
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                  _field(
+                    _emailController,
+                    'البريد الإلكتروني',
+                    Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: state.isSaving ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFDC2626),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: state.isSaving
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text('حفظ التغييرات'),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            _buildField(_nameController, 'الاسم الكامل', Icons.person_outline),
-            const SizedBox(height: 16),
-            _buildField(_phoneController, 'رقم الهاتف', Icons.phone_outlined, keyboardType: TextInputType.phone),
-            const SizedBox(height: 16),
-            _buildField(_emailController, 'البريد الإلكتروني', Icons.email_outlined, keyboardType: TextInputType.emailAddress),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFDC2626),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: _isLoading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('حفظ التغييرات'),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildField(TextEditingController controller, String hint, IconData icon, {TextInputType? keyboardType}) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFDC2626))),
-      ),
-    );
-  }
+  Widget _field(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) => TextFormField(
+    controller: controller,
+    keyboardType: keyboardType,
+    validator: validator,
+    decoration: InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+  );
 
   Future<void> _submit() async {
-    setState(() => _isLoading = true);
-    final result = await ref.read(profileProvider.notifier).updateProfile(
-      UpdateProfileRequest(
-        fullName: _nameController.text,
-        phone: _phoneController.text,
-        email: _emailController.text,
-      ),
-    );
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (result.success) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حفظ التغييرات')));
-        Navigator.of(context).pop();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result.error ?? 'فشل حفظ التغييرات')));
-      }
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final email = _emailController.text.trim();
+    final employee = ref.read(profileProvider).employee!;
+    final editsArabicName = employee.fullNameAr?.trim().isNotEmpty == true;
+    final result = await ref
+        .read(profileProvider.notifier)
+        .updateProfile(
+          UpdateProfileRequest(
+            fullName: editsArabicName ? null : _nameController.text.trim(),
+            fullNameAr: editsArabicName ? _nameController.text.trim() : null,
+            phone: _phoneController.text.trim(),
+            email: email.isEmpty ? null : email,
+          ),
+        );
+    if (!mounted) return;
+    if (result.success) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('تم حفظ التغييرات')));
+      Navigator.of(context).pop(true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.error ?? 'فشل حفظ التغييرات')),
+      );
     }
   }
 }

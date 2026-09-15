@@ -86,7 +86,7 @@ class _UnvisitedStoresPageState extends ConsumerState<UnvisitedStoresPage> {
             style: TextStyle(color: urgencyColor, fontSize: 12, fontWeight: FontWeight.bold),
           ),
         ),
-        onTap: () => context.go('/stores/${s.id}'),
+        onTap: () => context.push('/stores/${s.id}'),
       ),
     );
   }

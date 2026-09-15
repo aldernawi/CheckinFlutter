@@ -1,4 +1,5 @@
 import 'package:checkin_flutter/core/models/device_models.dart';
+import 'package:checkin_flutter/core/models/employee_dto.dart';
 import 'package:checkin_flutter/core/network/api_client.dart';
 import 'package:checkin_flutter/core/network/api_response.dart';
 import 'package:checkin_flutter/core/network/api_routes.dart';
@@ -8,6 +9,14 @@ class ProfileRepository {
   ProfileRepository(this._apiClient);
 
   final ApiClient _apiClient;
+
+  Future<ApiResponse<EmployeeDto>> getProfile() {
+    return _apiClient.get<EmployeeDto>(
+      ApiRoutes.myProfile,
+      converter: (value) =>
+          value is Map<String, dynamic> ? EmployeeDto.fromJson(value) : null,
+    );
+  }
 
   Future<ApiResponse<bool>> changePassword(ChangePasswordRequest request) {
     return _apiClient.post<bool>(
