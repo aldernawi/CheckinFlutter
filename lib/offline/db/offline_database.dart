@@ -49,7 +49,9 @@ class OfflineDatabase extends _$OfflineDatabase {
   }
 
   Future<void> updateItem(OfflineQueueItem item) async {
-    await (update(offlineQueueEntries)..where((t) => t.id.equals(item.id))).write(
+    await (update(
+      offlineQueueEntries,
+    )..where((t) => t.id.equals(item.id))).write(
       OfflineQueueEntriesCompanion(
         status: Value(item.status.name),
         retryCount: Value(item.retryCount),
@@ -63,19 +65,33 @@ class OfflineDatabase extends _$OfflineDatabase {
   }
 
   Future<List<OfflineQueueItem>> pendingItems() async {
-    final rows = await (select(offlineQueueEntries)
-          ..where((t) => t.status.equals(OfflineQueueStatus.pending.name))
-          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-        .get();
+    final rows =
+        await (select(offlineQueueEntries)
+              ..where(
+                (t) =>
+                    t.status.equals(OfflineQueueStatus.pending.name) |
+                    t.status.equals(OfflineQueueStatus.failed.name),
+              )
+              ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+            .get();
 
-    return rows.map(_toItem).toList();
+    final now = DateTime.now();
+    return rows
+        .map(_toItem)
+        .where(
+          (item) => item.nextRetryAt == null || !item.nextRetryAt!.isAfter(now),
+        )
+        .toList();
   }
 
   Future<int> pendingCount() async {
     final count = offlineQueueEntries.id.count();
     final query = selectOnly(offlineQueueEntries)
       ..addColumns([count])
-      ..where(offlineQueueEntries.status.equals(OfflineQueueStatus.pending.name));
+      ..where(
+        offlineQueueEntries.status.equals(OfflineQueueStatus.pending.name) |
+            offlineQueueEntries.status.equals(OfflineQueueStatus.failed.name),
+      );
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }

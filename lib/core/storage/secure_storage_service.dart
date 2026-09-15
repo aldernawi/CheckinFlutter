@@ -7,6 +7,7 @@ class StorageKeys {
   static const accessToken = 'access_token';
   static const refreshToken = 'refresh_token';
   static const employeeData = 'employee_data';
+  static const userRoleSet = 'user_role_set';
   static const deviceInstallationId = 'device_installation_id';
 }
 
@@ -30,6 +31,7 @@ class SecureStorageService {
     await _storage.delete(key: StorageKeys.accessToken);
     await _storage.delete(key: StorageKeys.refreshToken);
     await _storage.delete(key: StorageKeys.employeeData);
+    await _storage.delete(key: StorageKeys.userRoleSet);
   }
 }
 

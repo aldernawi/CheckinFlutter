@@ -1,6 +1,7 @@
 import 'package:checkin_flutter/core/models/device_models.dart';
 import 'package:checkin_flutter/core/network/api_client.dart';
 import 'package:checkin_flutter/core/network/api_response.dart';
+import 'package:checkin_flutter/core/network/api_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProfileRepository {
@@ -10,7 +11,7 @@ class ProfileRepository {
 
   Future<ApiResponse<bool>> changePassword(ChangePasswordRequest request) {
     return _apiClient.post<bool>(
-      'api/v1/profile/change-password',
+      ApiRoutes.changePassword,
       data: request.toJson(),
       converter: (value) => value is bool ? value : true,
     );
@@ -18,15 +19,15 @@ class ProfileRepository {
 
   Future<ApiResponse<bool>> updateProfile(UpdateProfileRequest request) {
     return _apiClient.put<bool>(
-      'api/v1/profile',
+      ApiRoutes.myProfile,
       data: request.toJson(),
       converter: (value) => value is bool ? value : true,
     );
   }
 
   Future<ApiResponse<bool>> deleteAccount(DeleteAccountRequest request) {
-    return _apiClient.post<bool>(
-      'api/v1/profile/delete-account',
+    return _apiClient.delete<bool>(
+      ApiRoutes.deleteMyAccount,
       data: request.toJson(),
       converter: (value) => value is bool ? value : true,
     );

@@ -106,29 +106,31 @@ class StoreDto {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'storeCode': storeCode,
-        'name': name,
-        'nameAr': nameAr,
-        'ownerName': ownerName,
-        'ownerPhone1': ownerPhone1,
-        'ownerPhone2': ownerPhone2,
-        'latitude': latitude,
-        'longitude': longitude,
-        'address': address,
-        'city': city,
-        'district': district,
-        'photos': photos,
-        'notes': notes,
-        'radiusInMeters': radiusInMeters,
-        'registrationType': registrationType == StoreRegistrationType.underMarketer ? 2 : 1,
-        'distanceInMeters': distanceInMeters,
-        'isWithinRange': isWithinRange,
-        'visitedToday': visitedToday,
-        'isPrimary': isPrimary,
-        'isActive': isActive,
-        'totalVisits': totalVisits,
-      };
+    'id': id,
+    'storeCode': storeCode,
+    'name': name,
+    'nameAr': nameAr,
+    'ownerName': ownerName,
+    'ownerPhone1': ownerPhone1,
+    'ownerPhone2': ownerPhone2,
+    'latitude': latitude,
+    'longitude': longitude,
+    'address': address,
+    'city': city,
+    'district': district,
+    'photos': photos,
+    'notes': notes,
+    'radiusInMeters': radiusInMeters,
+    'registrationType': registrationType == StoreRegistrationType.underMarketer
+        ? 2
+        : 1,
+    'distanceInMeters': distanceInMeters,
+    'isWithinRange': isWithinRange,
+    'visitedToday': visitedToday,
+    'isPrimary': isPrimary,
+    'isActive': isActive,
+    'totalVisits': totalVisits,
+  };
 }
 
 class StoreListItemDto {
@@ -224,7 +226,8 @@ class MyStoresResponse {
 
   factory MyStoresResponse.fromJson(Map<String, dynamic> json) {
     return MyStoresResponse(
-      stores: (json['stores'] as List?)
+      stores:
+          (json['stores'] as List?)
               ?.map((e) => StoreListItemDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -280,34 +283,32 @@ class CreateStoreRequest {
   final String? marketerId;
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'nameAr': nameAr,
-        'ownerName': ownerName,
-        'ownerPhone1': ownerPhone1,
-        'ownerPhone2': ownerPhone2,
-        'purchasingEmployeeName': purchasingEmployeeName,
-        'purchasingPhone1': purchasingPhone1,
-        'purchasingPhone2': purchasingPhone2,
-        'email': email,
-        'latitude': latitude,
-        'longitude': longitude,
-        'address': address,
-        'city': city,
-        'district': district,
-        'photos': photos,
-        'notes': notes,
-        'radiusInMeters': radiusInMeters,
-        'registrationType':
-            registrationType == StoreRegistrationType.underMarketer ? 2 : 1,
-        'marketerId': marketerId,
-      };
+    'name': name,
+    'nameAr': nameAr,
+    'ownerName': ownerName,
+    'ownerPhone1': ownerPhone1,
+    'ownerPhone2': ownerPhone2,
+    'purchasingEmployeeName': purchasingEmployeeName,
+    'purchasingPhone1': purchasingPhone1,
+    'purchasingPhone2': purchasingPhone2,
+    'email': email,
+    'latitude': latitude,
+    'longitude': longitude,
+    'address': address,
+    'city': city,
+    'district': district,
+    'photos': photos,
+    'notes': notes,
+    'radiusInMeters': radiusInMeters,
+    'registrationType': registrationType == StoreRegistrationType.underMarketer
+        ? 2
+        : 1,
+    'marketerId': marketerId,
+  };
 }
 
 class CreateStoreResponse {
-  CreateStoreResponse({
-    required this.id,
-    required this.storeCode,
-  });
+  CreateStoreResponse({required this.id, required this.storeCode});
 
   final String id;
   final String storeCode;
@@ -319,10 +320,7 @@ class CreateStoreResponse {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'storeCode': storeCode,
-      };
+  Map<String, dynamic> toJson() => {'id': id, 'storeCode': storeCode};
 }
 
 class UnvisitedStoreDto {
@@ -396,8 +394,11 @@ class UnvisitedStoresResponse {
 
   factory UnvisitedStoresResponse.fromJson(Map<String, dynamic> json) {
     return UnvisitedStoresResponse(
-      items: (json['items'] as List?)
-              ?.map((e) => UnvisitedStoreDto.fromJson(e as Map<String, dynamic>))
+      items:
+          (json['items'] as List?)
+              ?.map(
+                (e) => UnvisitedStoreDto.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       totalCount: json['totalCount'] as int? ?? 0,
@@ -438,18 +439,17 @@ class StoreVisitDto {
   final String? employeeNameAr;
 
   factory StoreVisitDto.fromJson(Map<String, dynamic> json) {
+    final visitDate = json['visitDate'] != null
+        ? DateTime.tryParse(json['visitDate'] as String) ?? DateTime.now()
+        : DateTime.now();
     return StoreVisitDto(
       id: json['id'] as String,
       visitNumber: json['visitNumber'] as String? ?? '',
-      visitDate: json['visitDate'] != null
-          ? DateTime.tryParse(json['visitDate'] as String) ?? DateTime.now()
-          : DateTime.now(),
-      checkInTime: json['checkInTime'] != null
-          ? DateTime.tryParse(json['checkInTime'] as String) ?? DateTime.now()
-          : DateTime.now(),
-      checkOutTime: json['checkOutTime'] != null
-          ? DateTime.tryParse(json['checkOutTime'] as String)
-          : null,
+      visitDate: visitDate,
+      checkInTime: _visitDateTime(json['checkInTime'], visitDate),
+      checkOutTime: json['checkOutTime'] == null
+          ? null
+          : _visitDateTime(json['checkOutTime'], visitDate),
       durationMinutes: json['durationMinutes'] as int?,
       distanceFromStore: json['distanceFromStore'] as int? ?? 0,
       status: VisitStatus.values.firstWhere(
@@ -462,6 +462,21 @@ class StoreVisitDto {
       employeeNameAr: json['employeeNameAr'] as String?,
     );
   }
+
+  static DateTime _visitDateTime(Object? raw, DateTime date) {
+    if (raw is! String || raw.isEmpty) return date;
+    final parsed = DateTime.tryParse(raw);
+    if (parsed != null) return parsed;
+    final parts = raw.split(':');
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      int.tryParse(parts.elementAtOrNull(0) ?? '') ?? 0,
+      int.tryParse(parts.elementAtOrNull(1) ?? '') ?? 0,
+      int.tryParse(parts.elementAtOrNull(2) ?? '') ?? 0,
+    );
+  }
 }
 
 class StoreVisitsResponse {
@@ -472,7 +487,8 @@ class StoreVisitsResponse {
 
   factory StoreVisitsResponse.fromJson(Map<String, dynamic> json) {
     return StoreVisitsResponse(
-      items: (json['items'] as List?)
+      items:
+          ((json['visits'] ?? json['items']) as List?)
               ?.map((e) => StoreVisitDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -497,12 +513,12 @@ class SelfRegisterRequest {
   final String branchId;
 
   Map<String, dynamic> toJson() => {
-        'fullName': fullName,
-        'phone': phone,
-        'email': email,
-        'password': password,
-        'branchId': branchId,
-      };
+    'fullName': fullName,
+    'phone': phone,
+    'email': email,
+    'password': password,
+    'branchId': branchId,
+  };
 }
 
 class SelfRegisterResponse {

@@ -1,5 +1,6 @@
 import 'package:checkin_flutter/features/home/home_provider.dart';
 import 'package:checkin_flutter/core/services/device_identity_service.dart';
+import 'package:checkin_flutter/core/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -394,14 +395,28 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _performAttendanceAction() async {
-    final device = await ref.read(deviceIdentityServiceProvider).getIdentity();
-    await ref
-        .read(homeProvider.notifier)
-        .performAttendanceAction(
-          latitude: 32.8872,
-          longitude: 13.1913,
-          accuracy: 10.0,
-          deviceId: device.id,
-        );
+    try {
+      final position = await ref
+          .read(locationServiceProvider)
+          .getCurrentLocation();
+      final device = await ref
+          .read(deviceIdentityServiceProvider)
+          .getIdentity();
+      await ref
+          .read(homeProvider.notifier)
+          .performAttendanceAction(
+            latitude: position.latitude,
+            longitude: position.longitude,
+            accuracy: position.accuracy,
+            deviceId: device.id,
+          );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
+      );
+    }
   }
 }

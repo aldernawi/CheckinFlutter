@@ -1,6 +1,7 @@
 import 'package:checkin_flutter/core/models/attendance_models.dart';
 import 'package:checkin_flutter/core/network/api_client.dart';
 import 'package:checkin_flutter/core/network/api_response.dart';
+import 'package:checkin_flutter/core/network/api_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AttendanceRepository {
@@ -10,7 +11,7 @@ class AttendanceRepository {
 
   Future<ApiResponse<AttendanceStatusResponse>> getStatus() {
     return _apiClient.get<AttendanceStatusResponse>(
-      'api/v1/attendance/status',
+      ApiRoutes.attendanceStatus,
       converter: (value) => value is Map<String, dynamic>
           ? AttendanceStatusResponse.fromJson(value)
           : null,
@@ -19,19 +20,21 @@ class AttendanceRepository {
 
   Future<ApiResponse<CheckinResponse>> checkin(CheckinRequest request) {
     return _apiClient.post<CheckinResponse>(
-      'api/v1/attendance/checkin',
+      ApiRoutes.attendanceCheckin,
       data: request.toJson(),
-      converter: (value) =>
-          value is Map<String, dynamic> ? CheckinResponse.fromJson(value) : null,
+      converter: (value) => value is Map<String, dynamic>
+          ? CheckinResponse.fromJson(value)
+          : null,
     );
   }
 
   Future<ApiResponse<CheckoutResponse>> checkout(CheckinRequest request) {
     return _apiClient.post<CheckoutResponse>(
-      'api/v1/attendance/checkout',
+      ApiRoutes.attendanceCheckout,
       data: request.toJson(),
-      converter: (value) =>
-          value is Map<String, dynamic> ? CheckoutResponse.fromJson(value) : null,
+      converter: (value) => value is Map<String, dynamic>
+          ? CheckoutResponse.fromJson(value)
+          : null,
     );
   }
 
@@ -40,7 +43,7 @@ class AttendanceRepository {
     double lng,
   ) {
     return _apiClient.get<NearbyLocationsResponse>(
-      'api/v1/locations/nearby',
+      ApiRoutes.nearbyLocations,
       queryParameters: {
         'latitude': lat.toString(),
         'longitude': lng.toString(),

@@ -1,4 +1,5 @@
 import 'package:checkin_flutter/core/models/request_models.dart';
+import 'package:checkin_flutter/core/network/auth_session_manager.dart';
 import 'package:checkin_flutter/features/requests/requests_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,7 +70,11 @@ class _NewRequestPageState extends ConsumerState<NewRequestPage> {
       children: [
         const Text(
           'نوع الطلب',
-          style: TextStyle(fontSize: 13, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontSize: 13,
+            color: Color(0xFF6B7280),
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -119,7 +124,11 @@ class _NewRequestPageState extends ConsumerState<NewRequestPage> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF6B7280),
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 8),
         InkWell(
@@ -140,14 +149,20 @@ class _NewRequestPageState extends ConsumerState<NewRequestPage> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today_outlined, size: 20, color: Color(0xFF9CA3AF)),
+                const Icon(
+                  Icons.calendar_today_outlined,
+                  size: 20,
+                  color: Color(0xFF9CA3AF),
+                ),
                 const SizedBox(width: 12),
                 Text(
                   date != null
                       ? '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}'
                       : 'اختر التاريخ',
                   style: TextStyle(
-                    color: date != null ? Colors.black87 : const Color(0xFF9CA3AF),
+                    color: date != null
+                        ? Colors.black87
+                        : const Color(0xFF9CA3AF),
                   ),
                 ),
               ],
@@ -164,7 +179,11 @@ class _NewRequestPageState extends ConsumerState<NewRequestPage> {
       children: [
         const Text(
           'السبب',
-          style: TextStyle(fontSize: 13, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontSize: 13,
+            color: Color(0xFF6B7280),
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -193,7 +212,11 @@ class _NewRequestPageState extends ConsumerState<NewRequestPage> {
       children: [
         const Text(
           'تفاصيل إضافية (اختياري)',
-          style: TextStyle(fontSize: 13, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontSize: 13,
+            color: Color(0xFF6B7280),
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 8),
         TextField(
@@ -224,24 +247,32 @@ class _NewRequestPageState extends ConsumerState<NewRequestPage> {
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFDC2626),
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
         child: _isSubmitting
             ? const SizedBox(
                 height: 24,
                 width: 24,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
               )
-            : const Text('إرسال الطلب', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+            : const Text(
+                'إرسال الطلب',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              ),
       ),
     );
   }
 
   Future<void> _submitRequest() async {
     if (_reasonController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('الرجاء كتابة سبب الطلب')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('الرجاء كتابة سبب الطلب')));
       return;
     }
 
@@ -255,22 +286,26 @@ class _NewRequestPageState extends ConsumerState<NewRequestPage> {
           ? '${_endDate!.year}-${_endDate!.month.toString().padLeft(2, '0')}-${_endDate!.day.toString().padLeft(2, '0')}'
           : null,
       reason: _reasonController.text.trim(),
-      details: _detailsController.text.trim().isNotEmpty ? _detailsController.text.trim() : null,
+      details: _detailsController.text.trim().isNotEmpty
+          ? _detailsController.text.trim()
+          : null,
     );
 
-    final success = await ref.read(requestsProvider.notifier).createRequest(request);
+    final success = await ref
+        .read(requestsProvider.notifier)
+        .createRequest(request);
 
     if (mounted) {
       setState(() => _isSubmitting = false);
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم إرسال الطلب بنجاح')),
-        );
-        context.go('/requests');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم إرسال الطلب بنجاح')));
+        context.go(requestsRouteForRole(ref.read(authSessionProvider).roleSet));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('فشل إرسال الطلب')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('فشل إرسال الطلب')));
       }
     }
   }

@@ -1,6 +1,7 @@
 import 'package:checkin_flutter/core/models/history_models.dart';
 import 'package:checkin_flutter/core/network/api_client.dart';
 import 'package:checkin_flutter/core/network/api_response.dart';
+import 'package:checkin_flutter/core/network/api_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HistoryRepository {
@@ -14,21 +15,18 @@ class HistoryRepository {
     DateTime? fromDate,
     DateTime? toDate,
   }) {
-    final params = <String, dynamic>{
-      'page': page,
-      'pageSize': pageSize,
-    };
+    final params = <String, dynamic>{'page': page, 'pageSize': pageSize};
     if (fromDate != null) {
-      params['fromDate'] =
+      params['startDate'] =
           '${fromDate.year}-${fromDate.month.toString().padLeft(2, '0')}-${fromDate.day.toString().padLeft(2, '0')}';
     }
     if (toDate != null) {
-      params['toDate'] =
+      params['endDate'] =
           '${toDate.year}-${toDate.month.toString().padLeft(2, '0')}-${toDate.day.toString().padLeft(2, '0')}';
     }
 
     return _apiClient.get<AttendanceHistoryResponse>(
-      'api/v1/attendance/history',
+      ApiRoutes.attendanceHistory,
       queryParameters: params,
       converter: (value) => value is Map<String, dynamic>
           ? AttendanceHistoryResponse.fromJson(value)

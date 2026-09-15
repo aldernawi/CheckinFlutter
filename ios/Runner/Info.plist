@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Checkin Flutter</string>
+	<string>Checkin</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -66,9 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<!-- Google Maps API Key (same as MAUI app) -->
+	<!-- Supplied through the Xcode build setting, never committed here. -->
 	<key>GoogleMapsApiKey</key>
-	<string>AIzaSyB_HgDpZJmjL4AqGAa7opfGbYrPCBv_EOo</string>
+	<string>$(GOOGLE_MAPS_API_KEY)</string>
 	<!-- Location permissions -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>يحتاج التطبيق إلى موقعك لتسجيل الحضور والزيارات الميدانية</string>

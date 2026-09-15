@@ -92,7 +92,7 @@ class _FieldVisitsPageState extends ConsumerState<FieldVisitsPage> {
                   ),
                 ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/fieldrep/stores'),
+        onPressed: () => context.go('/stores'),
         backgroundColor: const Color(0xFFDC2626),
         child: const Icon(Icons.add, color: Colors.white),
       ),

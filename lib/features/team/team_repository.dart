@@ -1,6 +1,7 @@
 import 'package:checkin_flutter/core/models/team_models.dart';
 import 'package:checkin_flutter/core/network/api_client.dart';
 import 'package:checkin_flutter/core/network/api_response.dart';
+import 'package:checkin_flutter/core/network/api_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TeamRepository {
@@ -10,7 +11,7 @@ class TeamRepository {
 
   Future<ApiResponse<TeamAttendanceResponse>> getTeamAttendance(DateTime date) {
     return _apiClient.get<TeamAttendanceResponse>(
-      'api/v1/team/attendance',
+      ApiRoutes.teamAttendance,
       queryParameters: {
         'date':
             '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
@@ -23,7 +24,7 @@ class TeamRepository {
 
   Future<ApiResponse<PendingRequestsResponse>> getPendingRequests() {
     return _apiClient.get<PendingRequestsResponse>(
-      'api/v1/team/pending-requests',
+      ApiRoutes.pendingRequests,
       converter: (value) => value is Map<String, dynamic>
           ? PendingRequestsResponse.fromJson(value)
           : null,
@@ -31,18 +32,22 @@ class TeamRepository {
   }
 
   Future<ApiResponse<bool>> approveRequest(
-      String requestId, ApproveRejectRequest request) {
+    String requestId,
+    ApproveRejectRequest request,
+  ) {
     return _apiClient.post<bool>(
-      'api/v1/team/requests/$requestId/approve',
+      ApiRoutes.requestApprove(requestId),
       data: request.toJson(),
       converter: (value) => value is bool ? value : true,
     );
   }
 
   Future<ApiResponse<bool>> rejectRequest(
-      String requestId, ApproveRejectRequest request) {
+    String requestId,
+    ApproveRejectRequest request,
+  ) {
     return _apiClient.post<bool>(
-      'api/v1/team/requests/$requestId/reject',
+      ApiRoutes.requestReject(requestId),
       data: request.toJson(),
       converter: (value) => value is bool ? value : true,
     );

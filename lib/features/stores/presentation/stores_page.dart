@@ -94,7 +94,7 @@ class _StoresPageState extends ConsumerState<StoresPage> {
           FloatingActionButton(
             heroTag: 'map',
             mini: true,
-            onPressed: () => context.go('/fieldrep/stores/map'),
+            onPressed: () => context.go('/stores-map'),
             backgroundColor: const Color(0xFF3B82F6),
             child: const Icon(Icons.map, color: Colors.white),
           ),
@@ -102,14 +102,14 @@ class _StoresPageState extends ConsumerState<StoresPage> {
           FloatingActionButton(
             heroTag: 'unvisited',
             mini: true,
-            onPressed: () => context.go('/fieldrep/stores/unvisited'),
+            onPressed: () => context.go('/stores/unvisited'),
             backgroundColor: const Color(0xFFF59E0B),
             child: const Icon(Icons.storefront_outlined, color: Colors.white),
           ),
           const SizedBox(height: 8),
           FloatingActionButton(
             heroTag: 'add',
-            onPressed: () => context.go('/fieldrep/stores/add'),
+            onPressed: () => context.go('/stores/add'),
             backgroundColor: const Color(0xFFDC2626),
             child: const Icon(Icons.add, color: Colors.white),
           ),
@@ -143,7 +143,7 @@ class _StoresPageState extends ConsumerState<StoresPage> {
           decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
           child: Text(statusText, style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600)),
         ),
-        onTap: () => context.go('/fieldrep/stores/${s.id}'),
+        onTap: () => context.go('/stores/${s.id}'),
       ),
     );
   }

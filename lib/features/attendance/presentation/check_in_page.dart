@@ -1,4 +1,5 @@
 import 'package:checkin_flutter/core/models/attendance_models.dart';
+import 'package:checkin_flutter/core/network/auth_session_manager.dart';
 import 'package:checkin_flutter/core/services/location_service.dart';
 import 'package:checkin_flutter/core/services/device_identity_service.dart';
 import 'package:checkin_flutter/features/attendance/attendance_repository.dart';
@@ -128,7 +129,9 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
               ),
             const SizedBox(height: 16),
             TextButton(
-              onPressed: () => context.go('/main/home'),
+              onPressed: () => context.go(
+                homeRouteForRole(ref.read(authSessionProvider).roleSet),
+              ),
               child: const Text('إلغاء'),
             ),
             const SizedBox(height: 24),
@@ -158,7 +161,7 @@ class _CheckInPageState extends ConsumerState<CheckInPage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('تم تسجيل الحضور بنجاح')));
-        context.go('/main/home');
+        context.go(homeRouteForRole(ref.read(authSessionProvider).roleSet));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

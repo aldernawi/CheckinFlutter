@@ -26,18 +26,18 @@ class RecordVisitRequest {
   final bool isRootedDevice;
 
   Map<String, dynamic> toJson() => {
-        'storeId': storeId,
-        'latitude': latitude,
-        'longitude': longitude,
-        'accuracy': accuracy,
-        'notes': notes,
-        'photos': photos,
-        'deviceId': deviceId,
-        'isOffline': isOffline,
-        'localTimestamp': localTimestamp?.toIso8601String(),
-        'isMockLocation': isMockLocation,
-        'isRootedDevice': isRootedDevice,
-      };
+    'storeId': storeId,
+    'latitude': latitude,
+    'longitude': longitude,
+    'accuracy': accuracy,
+    'notes': notes,
+    'photos': photos,
+    'deviceId': deviceId,
+    'isOffline': isOffline,
+    'localTimestamp': localTimestamp?.toIso8601String(),
+    'isMockLocation': isMockLocation,
+    'isRootedDevice': isRootedDevice,
+  };
 }
 
 class RecordVisitResponse {
@@ -136,18 +136,18 @@ class FieldVisitDto {
   final StoreBasicDto store;
 
   factory FieldVisitDto.fromJson(Map<String, dynamic> json) {
+    final visitDate = json['visitDate'] != null
+        ? DateTime.tryParse(json['visitDate'] as String) ?? DateTime.now()
+        : DateTime.now();
+    final storeJson = json['store'] as Map<String, dynamic>?;
     return FieldVisitDto(
       id: json['id'] as String? ?? '',
       visitNumber: json['visitNumber'] as String? ?? '',
-      visitDate: json['visitDate'] != null
-          ? DateTime.tryParse(json['visitDate'] as String) ?? DateTime.now()
-          : DateTime.now(),
-      checkInTime: json['checkInTime'] != null
-          ? DateTime.tryParse(json['checkInTime'] as String) ?? DateTime.now()
-          : DateTime.now(),
-      checkOutTime: json['checkOutTime'] != null
-          ? DateTime.tryParse(json['checkOutTime'] as String)
-          : null,
+      visitDate: visitDate,
+      checkInTime: _visitDateTime(json['checkInTime'], visitDate),
+      checkOutTime: json['checkOutTime'] == null
+          ? null
+          : _visitDateTime(json['checkOutTime'], visitDate),
       durationMinutes: json['durationMinutes'] as int?,
       distanceFromStore: json['distanceFromStore'] as int? ?? 0,
       status: json['status'] as int? ?? 1,
@@ -156,9 +156,29 @@ class FieldVisitDto {
       flags: (json['flags'] as List?)?.map((e) => e as String).toList() ?? [],
       isFirstVisitOfDay: json['isFirstVisitOfDay'] as bool? ?? false,
       isLastVisitOfDay: json['isLastVisitOfDay'] as bool? ?? false,
-      store: json['store'] != null
-          ? StoreBasicDto.fromJson(json['store'] as Map<String, dynamic>)
-          : StoreBasicDto(id: '', name: ''),
+      store: storeJson != null
+          ? StoreBasicDto.fromJson(storeJson)
+          : StoreBasicDto(
+              id: json['storeId'] as String? ?? '',
+              name: json['storeName'] as String? ?? '',
+              nameAr: json['storeNameAr'] as String?,
+            ),
+    );
+  }
+
+  static DateTime _visitDateTime(Object? raw, DateTime date) {
+    if (raw is! String || raw.isEmpty) return date;
+    final parsed = DateTime.tryParse(raw);
+    if (parsed != null) return parsed;
+    final parts = raw.split(':');
+    if (parts.length < 2) return date;
+    return DateTime(
+      date.year,
+      date.month,
+      date.day,
+      int.tryParse(parts[0]) ?? 0,
+      int.tryParse(parts[1]) ?? 0,
+      parts.length > 2 ? int.tryParse(parts[2]) ?? 0 : 0,
     );
   }
 }
@@ -255,9 +275,12 @@ class TodayVisitsSummaryDto {
           ? DateTime.tryParse(json['lastVisitTime'] as String)
           : null,
       totalDurationMinutes: json['totalDurationMinutes'] as int? ?? 0,
-      visits: (json['visits'] as List?)
-              ?.map((e) =>
-                  FieldVisitListItemDto.fromJson(e as Map<String, dynamic>))
+      visits:
+          (json['visits'] as List?)
+              ?.map(
+                (e) =>
+                    FieldVisitListItemDto.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
     );
@@ -279,7 +302,8 @@ class MyVisitsResponse {
 
   factory MyVisitsResponse.fromJson(Map<String, dynamic> json) {
     return MyVisitsResponse(
-      items: (json['items'] as List?)
+      items:
+          ((json['visits'] ?? json['items']) as List?)
               ?.map((e) => FieldVisitDto.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],

@@ -1,5 +1,7 @@
 import 'package:checkin_flutter/core/models/attendance_models.dart';
+import 'package:checkin_flutter/core/network/auth_session_manager.dart';
 import 'package:checkin_flutter/core/services/device_identity_service.dart';
+import 'package:checkin_flutter/core/services/location_service.dart';
 import 'package:checkin_flutter/features/attendance/attendance_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,7 +79,9 @@ class _CheckOutPageState extends ConsumerState<CheckOutPage> {
             ),
             const SizedBox(height: 16),
             TextButton(
-              onPressed: () => context.go('/main/home'),
+              onPressed: () => context.go(
+                homeRouteForRole(ref.read(authSessionProvider).roleSet),
+              ),
               child: const Text('إلغاء'),
             ),
             const SizedBox(height: 24),
@@ -89,24 +93,29 @@ class _CheckOutPageState extends ConsumerState<CheckOutPage> {
 
   Future<void> _checkOut() async {
     setState(() => _isSubmitting = true);
-    final device = await ref.read(deviceIdentityServiceProvider).getIdentity();
-    final response = await ref
-        .read(attendanceRepositoryProvider)
-        .checkout(
-          CheckinRequest(
-            latitude: 32.8872,
-            longitude: 13.1911,
-            accuracy: 10,
-            deviceId: device.id,
-          ),
-        );
-    if (mounted) {
-      setState(() => _isSubmitting = false);
+    try {
+      final device = await ref
+          .read(deviceIdentityServiceProvider)
+          .getIdentity();
+      final position = await ref
+          .read(locationServiceProvider)
+          .getCurrentLocation();
+      final response = await ref
+          .read(attendanceRepositoryProvider)
+          .checkout(
+            CheckinRequest(
+              latitude: position.latitude,
+              longitude: position.longitude,
+              accuracy: position.accuracy,
+              deviceId: device.id,
+            ),
+          );
+      if (!mounted) return;
       if (response.success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('تم تسجيل الانصراف بنجاح')),
         );
-        context.go('/main/home');
+        context.go(homeRouteForRole(ref.read(authSessionProvider).roleSet));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -114,6 +123,14 @@ class _CheckOutPageState extends ConsumerState<CheckOutPage> {
           ),
         );
       }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('تعذر الحصول على الموقع: $error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 }

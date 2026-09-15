@@ -1,4 +1,5 @@
 import 'package:checkin_flutter/core/models/request_models.dart';
+import 'package:checkin_flutter/core/network/auth_session_manager.dart';
 import 'package:checkin_flutter/features/requests/requests_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,10 @@ class RequestDetailsPage extends ConsumerWidget {
                   _buildStatusBanner(request),
                   const SizedBox(height: 20),
                   _buildInfoRow('رقم الطلب', request.requestNumber),
-                  _buildInfoRow('النوع', request.typeNameAr ?? request.typeName),
+                  _buildInfoRow(
+                    'النوع',
+                    request.typeNameAr ?? request.typeName,
+                  ),
                   _buildInfoRow('الحالة', request.statusName),
                   _buildInfoRow('تاريخ البداية', request.effectiveDate),
                   if (request.endDate != null)
@@ -52,13 +56,18 @@ class RequestDetailsPage extends ConsumerWidget {
                       height: 48,
                       child: OutlinedButton(
                         onPressed: () async {
-                          final success =
-                              await ref.read(requestsProvider.notifier).cancelRequest(requestId);
+                          final success = await ref
+                              .read(requestsProvider.notifier)
+                              .cancelRequest(requestId);
                           if (success && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('تم إلغاء الطلب')),
                             );
-                            context.go('/requests');
+                            context.go(
+                              requestsRouteForRole(
+                                ref.read(authSessionProvider).roleSet,
+                              ),
+                            );
                           }
                         },
                         style: OutlinedButton.styleFrom(

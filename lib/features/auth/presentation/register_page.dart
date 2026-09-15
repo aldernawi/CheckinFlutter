@@ -18,6 +18,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _error;
+  List<BranchOption> _branches = const [];
+  String? _branchId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBranches();
+  }
 
   @override
   void dispose() {
@@ -39,15 +47,56 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           children: [
             const Center(child: AppLogo(size: 72)),
             const SizedBox(height: 16),
-            const Text('أنشئ حساباً جديداً', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const Text(
+              'أنشئ حساباً جديداً',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 24),
             _buildField(_nameController, 'الاسم الكامل', Icons.person_outline),
             const SizedBox(height: 16),
-            _buildField(_phoneController, 'رقم الهاتف', Icons.phone_outlined, keyboardType: TextInputType.phone),
+            _buildField(
+              _phoneController,
+              'رقم الهاتف',
+              Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+            ),
             const SizedBox(height: 16),
-            _buildField(_emailController, 'البريد الإلكتروني (اختياري)', Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+            _buildField(
+              _emailController,
+              'البريد الإلكتروني (اختياري)',
+              Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+            ),
             const SizedBox(height: 16),
-            _buildField(_passwordController, 'كلمة المرور', Icons.lock_outline, obscureText: true),
+            DropdownButtonFormField<String>(
+              initialValue: _branchId,
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: 'الفرع',
+                prefixIcon: const Icon(Icons.account_tree_outlined),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              items: _branches
+                  .map(
+                    (branch) => DropdownMenuItem(
+                      value: branch.id,
+                      child: Text(branch.displayName),
+                    ),
+                  )
+                  .toList(),
+              onChanged: _isLoading
+                  ? null
+                  : (value) => setState(() => _branchId = value),
+            ),
+            const SizedBox(height: 16),
+            _buildField(
+              _passwordController,
+              'كلمة المرور',
+              Icons.lock_outline,
+              obscureText: true,
+            ),
             if (_error != null) ...[
               const SizedBox(height: 12),
               Text(_error!, style: const TextStyle(color: Color(0xFFEF4444))),
@@ -60,10 +109,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFDC2626),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 child: _isLoading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
                     : const Text('إنشاء حساب'),
               ),
             ),
@@ -78,8 +136,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
-  Widget _buildField(TextEditingController controller, String hint, IconData icon,
-      {TextInputType? keyboardType, bool obscureText = false}) {
+  Widget _buildField(
+    TextEditingController controller,
+    String hint,
+    IconData icon, {
+    TextInputType? keyboardType,
+    bool obscureText = false,
+  }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
@@ -101,23 +164,43 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   Future<void> _submit() async {
+    if (_branchId == null) {
+      setState(() => _error = 'يرجى اختيار الفرع');
+      return;
+    }
     setState(() => _isLoading = true);
-    final result = await ref.read(authRepositoryProvider).selfRegister(
-      fullName: _nameController.text,
-      phone: _phoneController.text,
-      password: _passwordController.text,
-      email: _emailController.text.isEmpty ? null : _emailController.text,
-    );
+    final result = await ref
+        .read(authRepositoryProvider)
+        .selfRegister(
+          fullName: _nameController.text,
+          phone: _phoneController.text,
+          password: _passwordController.text,
+          branchId: _branchId!,
+          email: _emailController.text.isEmpty ? null : _emailController.text,
+        );
     if (mounted) {
       setState(() => _isLoading = false);
       if (result.success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم إنشاء الحساب بنجاح')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('تم إنشاء الحساب بنجاح')));
         context.go('/login');
       } else {
         setState(() => _error = result.error);
       }
     }
+  }
+
+  Future<void> _loadBranches() async {
+    final branches = await ref
+        .read(authRepositoryProvider)
+        .getRegistrationBranches();
+    if (!mounted) return;
+    setState(() {
+      _branches = branches.where((branch) => branch.id.isNotEmpty).toList();
+      if (_branches.isEmpty) {
+        _error = 'تعذر تحميل الفروع، تحقق من الاتصال ثم أعد المحاولة.';
+      }
+    });
   }
 }

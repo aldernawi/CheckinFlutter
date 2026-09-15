@@ -4,6 +4,7 @@ import 'package:checkin_flutter/core/config/app_environment.dart';
 import 'package:checkin_flutter/core/constants/app_constants.dart';
 import 'package:checkin_flutter/core/logging/app_logger.dart';
 import 'package:checkin_flutter/core/network/auth_session_manager.dart';
+import 'package:checkin_flutter/core/network/api_routes.dart';
 import 'package:checkin_flutter/core/network/api_response.dart';
 import 'package:checkin_flutter/core/storage/secure_storage_service.dart';
 import 'package:dio/dio.dart';
@@ -81,7 +82,10 @@ class ApiClient {
 
       return ApiResponse<T>(
         success: false,
-        error: ApiError(code: 'INVALID_RESPONSE', message: 'Invalid API payload'),
+        error: ApiError(
+          code: 'INVALID_RESPONSE',
+          message: 'Invalid API payload',
+        ),
       );
     } on DioException catch (error, stackTrace) {
       AppLogger.instance.error('API call failed', error, stackTrace);
@@ -177,8 +181,10 @@ class AuthInterceptor extends Interceptor {
         return completer.future;
       }
 
-      final response = await ref.read(dioProvider).post(
-            'api/v1/auth/refresh',
+      final response = await ref
+          .read(dioProvider)
+          .post(
+            ApiRoutes.refresh,
             data: {
               'accessToken': accessToken ?? '',
               'refreshToken': refreshToken,

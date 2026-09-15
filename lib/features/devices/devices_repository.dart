@@ -1,6 +1,7 @@
 import 'package:checkin_flutter/core/models/device_models.dart';
 import 'package:checkin_flutter/core/network/api_client.dart';
 import 'package:checkin_flutter/core/network/api_response.dart';
+import 'package:checkin_flutter/core/network/api_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DevicesRepository {
@@ -10,7 +11,7 @@ class DevicesRepository {
 
   Future<ApiResponse<DevicesListResponse>> getDevices() {
     return _apiClient.get<DevicesListResponse>(
-      'api/v1/devices',
+      ApiRoutes.authDevices,
       converter: (value) => value is Map<String, dynamic>
           ? DevicesListResponse.fromJson(value)
           : null,
@@ -19,7 +20,7 @@ class DevicesRepository {
 
   Future<ApiResponse<bool>> revokeDevice(String deviceId) {
     return _apiClient.delete<bool>(
-      'api/v1/devices/$deviceId',
+      ApiRoutes.authDevice(deviceId),
       converter: (value) => value is bool ? value : true,
     );
   }

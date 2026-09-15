@@ -5,6 +5,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum AppUserRoleSet { employee, manager, fieldRep }
 
+String homeRouteForRole(AppUserRoleSet roleSet) {
+  switch (roleSet) {
+    case AppUserRoleSet.manager:
+      return '/manager/home';
+    case AppUserRoleSet.fieldRep:
+      return '/field/home';
+    case AppUserRoleSet.employee:
+      return '/main/home';
+  }
+}
+
+String requestsRouteForRole(AppUserRoleSet roleSet) {
+  switch (roleSet) {
+    case AppUserRoleSet.manager:
+      return '/manager/requests';
+    case AppUserRoleSet.fieldRep:
+      return '/field/requests';
+    case AppUserRoleSet.employee:
+      return '/main/requests';
+  }
+}
+
 class AuthSessionState {
   const AuthSessionState({
     required this.isAuthenticated,
@@ -14,10 +36,7 @@ class AuthSessionState {
   final bool isAuthenticated;
   final AppUserRoleSet roleSet;
 
-  AuthSessionState copyWith({
-    bool? isAuthenticated,
-    AppUserRoleSet? roleSet,
-  }) {
+  AuthSessionState copyWith({bool? isAuthenticated, AppUserRoleSet? roleSet}) {
     return AuthSessionState(
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       roleSet: roleSet ?? this.roleSet,
@@ -27,10 +46,12 @@ class AuthSessionState {
 
 class AuthSessionNotifier extends StateNotifier<AuthSessionState> {
   AuthSessionNotifier(this._storage)
-      : super(const AuthSessionState(
+    : super(
+        const AuthSessionState(
           isAuthenticated: false,
           roleSet: AppUserRoleSet.employee,
-        ));
+        ),
+      );
 
   final SecureStorageService _storage;
 
@@ -41,7 +62,15 @@ class AuthSessionNotifier extends StateNotifier<AuthSessionState> {
 
   Future<void> bootstrap() async {
     final token = await _storage.read(StorageKeys.accessToken);
-    state = state.copyWith(isAuthenticated: token?.isNotEmpty == true);
+    final storedRole = await _storage.read(StorageKeys.userRoleSet);
+    final roleSet = AppUserRoleSet.values.firstWhere(
+      (role) => role.name == storedRole,
+      orElse: () => AppUserRoleSet.employee,
+    );
+    state = state.copyWith(
+      isAuthenticated: token?.isNotEmpty == true,
+      roleSet: roleSet,
+    );
   }
 
   Future<void> saveSession({
@@ -51,11 +80,9 @@ class AuthSessionNotifier extends StateNotifier<AuthSessionState> {
   }) async {
     await _storage.write(StorageKeys.accessToken, accessToken);
     await _storage.write(StorageKeys.refreshToken, refreshToken);
+    await _storage.write(StorageKeys.userRoleSet, roleSet.name);
 
-    state = state.copyWith(
-      isAuthenticated: true,
-      roleSet: roleSet,
-    );
+    state = state.copyWith(isAuthenticated: true, roleSet: roleSet);
   }
 
   Future<void> logout() async {
@@ -77,5 +104,5 @@ class AuthSessionNotifier extends StateNotifier<AuthSessionState> {
 
 final authSessionProvider =
     StateNotifierProvider<AuthSessionNotifier, AuthSessionState>(
-  (ref) => AuthSessionNotifier(ref.watch(secureStorageServiceProvider)),
-);
+      (ref) => AuthSessionNotifier(ref.watch(secureStorageServiceProvider)),
+    );

@@ -1,5 +1,4 @@
-import 'package:checkin_flutter/core/connectivity/connectivity_service.dart';
-import 'package:checkin_flutter/offline/queue/offline_queue_repository.dart';
+import 'package:checkin_flutter/offline/sync/offline_sync_orchestrator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -15,29 +14,7 @@ void callbackDispatcher() {
       case _syncTaskName:
         _backgroundContainer ??= ProviderContainer();
         final container = _backgroundContainer!;
-        final queueRepo = container.read(offlineQueueRepositoryProvider);
-        final connectivity = container.read(connectivityServiceProvider);
-
-        final hasInternet = await connectivity.hasInternet();
-        if (!hasInternet) {
-          return false;
-        }
-
-        final pendingItems = await queueRepo.pending();
-        if (pendingItems.isEmpty) {
-          return true;
-        }
-
-        for (final item in pendingItems) {
-          try {
-            await queueRepo.update(item.copyWith(
-              status: item.status,
-              retryCount: item.retryCount,
-            ));
-          } catch (_) {
-            return false;
-          }
-        }
+        await container.read(offlineSyncOrchestratorProvider).syncPending();
         return true;
       default:
         return true;
@@ -51,9 +28,7 @@ Future<void> initializeBackgroundSync() async {
     _syncTaskTag,
     _syncTaskName,
     frequency: const Duration(minutes: 15),
-    constraints: Constraints(
-      networkType: NetworkType.connected,
-    ),
+    constraints: Constraints(networkType: NetworkType.connected),
     existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
   );
 }

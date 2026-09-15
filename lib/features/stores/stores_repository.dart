@@ -1,6 +1,7 @@
 import 'package:checkin_flutter/core/models/store_models.dart';
 import 'package:checkin_flutter/core/network/api_client.dart';
 import 'package:checkin_flutter/core/network/api_response.dart';
+import 'package:checkin_flutter/core/network/api_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class StoresRepository {
@@ -16,17 +17,14 @@ class StoresRepository {
     int page = 1,
     int pageSize = 20,
   }) {
-    final params = <String, dynamic>{
-      'page': page,
-      'pageSize': pageSize,
-    };
+    final params = <String, dynamic>{'page': page, 'pageSize': pageSize};
     if (latitude != null) params['latitude'] = latitude.toString();
     if (longitude != null) params['longitude'] = longitude.toString();
     if (search != null && search.isNotEmpty) params['search'] = search;
     if (orderByDistance) params['orderByDistance'] = 'true';
 
     return _apiClient.get<MyStoresResponse>(
-      'api/v1/stores/my',
+      ApiRoutes.myStores,
       queryParameters: params,
       converter: (value) => value is Map<String, dynamic>
           ? MyStoresResponse.fromJson(value)
@@ -36,15 +34,17 @@ class StoresRepository {
 
   Future<ApiResponse<StoreDto>> getStore(String storeId) {
     return _apiClient.get<StoreDto>(
-      'api/v1/stores/$storeId',
+      ApiRoutes.store(storeId),
       converter: (value) =>
           value is Map<String, dynamic> ? StoreDto.fromJson(value) : null,
     );
   }
 
-  Future<ApiResponse<CreateStoreResponse>> createStore(CreateStoreRequest request) {
+  Future<ApiResponse<CreateStoreResponse>> createStore(
+    CreateStoreRequest request,
+  ) {
     return _apiClient.post<CreateStoreResponse>(
-      'api/v1/stores',
+      ApiRoutes.stores,
       data: request.toJson(),
       converter: (value) => value is Map<String, dynamic>
           ? CreateStoreResponse.fromJson(value)
@@ -53,9 +53,11 @@ class StoresRepository {
   }
 
   Future<ApiResponse<StoreDto>> updateStore(
-      String storeId, CreateStoreRequest request) {
+    String storeId,
+    CreateStoreRequest request,
+  ) {
     return _apiClient.put<StoreDto>(
-      'api/v1/stores/$storeId',
+      ApiRoutes.store(storeId),
       data: request.toJson(),
       converter: (value) =>
           value is Map<String, dynamic> ? StoreDto.fromJson(value) : null,
@@ -66,9 +68,16 @@ class StoresRepository {
     int page = 1,
     int pageSize = 20,
   }) {
+    final now = DateTime.now();
+    final fromDate = DateTime(now.year, now.month);
     return _apiClient.get<UnvisitedStoresResponse>(
-      'api/v1/stores/unvisited',
-      queryParameters: {'page': page, 'pageSize': pageSize},
+      ApiRoutes.unvisitedStores,
+      queryParameters: {
+        'fromDate': fromDate.toIso8601String(),
+        'toDate': now.toIso8601String(),
+        'page': page,
+        'pageSize': pageSize,
+      },
       converter: (value) => value is Map<String, dynamic>
           ? UnvisitedStoresResponse.fromJson(value)
           : null,
@@ -77,7 +86,8 @@ class StoresRepository {
 
   Future<ApiResponse<StoreVisitsResponse>> getStoreVisits(String storeId) {
     return _apiClient.get<StoreVisitsResponse>(
-      'api/v1/stores/$storeId/visits',
+      ApiRoutes.visitHistory,
+      queryParameters: {'storeId': storeId, 'page': 1, 'pageSize': 100},
       converter: (value) => value is Map<String, dynamic>
           ? StoreVisitsResponse.fromJson(value)
           : null,
