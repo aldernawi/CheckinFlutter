@@ -46,3 +46,4 @@ app.*.map.json
 
 # Per-developer map credentials (pass them with -PGOOGLE_MAPS_API_KEY=...)
 /ios/Flutter/Secrets.xcconfig
+/android/keys.properties
